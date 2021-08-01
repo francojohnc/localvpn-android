@@ -64,7 +64,7 @@ public class Connection implements Runnable {
                     dataSent = true;
                     buffer.flip();
                     Packet packet = new Packet(buffer);
-                    if (packet.isTCP() && packet.ipHeader.destinationAddress.getHostName().equals("192.168.254.108")) {
+                    if (packet.ipHeader.destinationAddress.getHostName().equals("192.168.254.108")) {
                         deviceToNetworkQueue.offer(packet);
                     } else {
                         dataSent = false;

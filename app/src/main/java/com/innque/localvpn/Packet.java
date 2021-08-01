@@ -27,41 +27,18 @@ import java.nio.ByteBuffer;
 public class Packet {
     public static final int IP4_HEADER_SIZE = 20;
     public static final int TCP_HEADER_SIZE = 20;
-    public static final int UDP_HEADER_SIZE = 8;
 
     public IP4Header ipHeader;
     public TCPHeader tcpHeader;
     public ByteBuffer buffer;
 
-    private boolean isTCP;
-    private boolean isUDP;
 
     public Packet(ByteBuffer buffer) throws UnknownHostException {
         this.ipHeader = new IP4Header(buffer);
-        if (this.ipHeader.protocol == IP4Header.TransportProtocol.TCP) {
-            this.tcpHeader = new TCPHeader(buffer);
-            this.isTCP = true;
-        }
+        this.tcpHeader = new TCPHeader(buffer);
         this.buffer = buffer;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Packet{");
-        sb.append("ipHeader=").append(ipHeader);
-        if (isTCP) sb.append(", tcpHeader=").append(tcpHeader);
-        sb.append(", payloadSize=").append(this.buffer.limit() - this.buffer.position());
-        sb.append('}');
-        return sb.toString();
-    }
-
-    public boolean isTCP() {
-        return isTCP;
-    }
-
-    public boolean isUDP() {
-        return isUDP;
-    }
 
     public void swapSourceAndDestination() {
         InetAddress newSourceAddress = ipHeader.destinationAddress;
@@ -76,8 +53,6 @@ public class Packet {
     public void updateTCPBuffer(byte flags, long sequenceNum, long ackNum, int payloadSize) {
         this.buffer.position(0);
         fillHeader(this.buffer);
-//        this.buffer = buffer;
-
         tcpHeader.flags = flags;
 //        this.setFlags(flags);
         this.buffer.put(IP4_HEADER_SIZE + 13, flags);
@@ -92,6 +67,7 @@ public class Packet {
 
         // Reset header size, since we don't need options
         byte dataOffset = (byte) (TCP_HEADER_SIZE << 2);
+        System.out.println(dataOffset);
         tcpHeader.dataOffsetAndReserved = dataOffset;
         //        this.setOffset(dataOffset);
 
