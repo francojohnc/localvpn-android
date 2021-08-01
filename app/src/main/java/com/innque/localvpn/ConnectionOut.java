@@ -41,7 +41,7 @@ public class ConnectionOut implements Runnable {
                 ByteBuffer buffer = packet.buffer;
 
                 InetAddress destinationAddress = packet.ipHeader.destinationAddress;
-                Packet.TCPHeader tcpHeader = packet.tcpHeader;
+                TCPHeader tcpHeader = packet.tcpHeader;
                 Log.d(TAG, "to Remote: " + packet.ipHeader.toString());
                 Log.d(TAG, "to Remote: " + tcpHeader.toString());
 
@@ -65,7 +65,7 @@ public class ConnectionOut implements Runnable {
 
 
     private void initializeConnection(String ipAndPort, InetAddress destinationAddress, int destinationPort,
-                                      Packet packet, Packet.TCPHeader tcpHeader)
+                                      Packet packet, TCPHeader tcpHeader)
             throws IOException {
         packet.swapSourceAndDestination();
         if (tcpHeader.isSYN()) {
@@ -85,7 +85,7 @@ public class ConnectionOut implements Runnable {
     }
 
 
-    private void processACK(TCB tcb, Packet.TCPHeader tcpHeader, ByteBuffer payloadBuffer) throws IOException {
+    private void processACK(TCB tcb, TCPHeader tcpHeader, ByteBuffer payloadBuffer) throws IOException {
         int payloadSize = payloadBuffer.limit() - payloadBuffer.position();
         synchronized (tcb) {
             SocketChannel outputChannel = tcb.channel;

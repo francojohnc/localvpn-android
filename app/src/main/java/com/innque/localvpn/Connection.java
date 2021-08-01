@@ -75,8 +75,8 @@ public class Connection implements Runnable {
                 ByteBuffer bufferNetwork = networkToDeviceQueue.poll();
                 if (bufferNetwork != null) {
                     bufferNetwork.flip();
-                    Packet2 packet = new Packet2(bufferNetwork);
-                    Log.d(TAG, "to Local: " + packet.tcpHeader.toString());
+//                    Packet2 packet = new Packet2(bufferNetwork);
+//                    Log.d(TAG, "to Local: " + packet.tcpHeader.toString());
                     bufferNetwork.position(0);
                     out.write(bufferNetwork);
                     dataReceived = true;

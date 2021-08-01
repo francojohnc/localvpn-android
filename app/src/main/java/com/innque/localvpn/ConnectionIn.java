@@ -58,7 +58,7 @@ public class ConnectionIn implements Runnable {
         try {
             if (tcb.channel.finishConnect()) {
                 tcb.status = TCB.TCBStatus.SYN_RECEIVED;
-                packet.updateTCPBuffer((byte) (Packet.TCPHeader.SYN | Packet.TCPHeader.ACK), tcb.lSequenceNum, tcb.lAcknowledgement, 0);
+                packet.updateTCPBuffer((byte) (TCPHeader.SYN | TCPHeader.ACK), tcb.lSequenceNum, tcb.lAcknowledgement, 0);
                 networkToDeviceQueue.offer(packet.buffer);
                 tcb.lSequenceNum++;
                 // update to read event
@@ -77,7 +77,7 @@ public class ConnectionIn implements Runnable {
             SocketChannel channel = (SocketChannel) key.channel();
             int size;
             size = channel.read(buffer);
-            packet.updateTCPBuffer((byte) (Packet.TCPHeader.PSH + Packet.TCPHeader.ACK), tcb.lSequenceNum, tcb.lAcknowledgement, size);
+            packet.updateTCPBuffer((byte) (TCPHeader.PSH + TCPHeader.ACK), tcb.lSequenceNum, tcb.lAcknowledgement, size);
             tcb.lSequenceNum += size; // Next sequence number
             packet.buffer.position(HEADER_SIZE + size);
             networkToDeviceQueue.offer(packet.buffer);
