@@ -52,24 +52,20 @@ public class Packet {
 
     public void updateTCPBuffer(byte flags, long sequenceNum, long ackNum, int payloadSize) {
         this.buffer.position(0);
-        fillHeader(this.buffer);
+        fillHeader();
         tcpHeader.flags = flags;
-//        this.setFlags(flags);
         this.buffer.put(IP4_HEADER_SIZE + 13, flags);
 
         tcpHeader.sequenceNumber = sequenceNum;
-//        this.setSequenceNumber((int) sequenceNum);
         this.buffer.putInt(IP4_HEADER_SIZE + 4, (int) sequenceNum);
 
         tcpHeader.acknowledgementNumber = ackNum;
-//        this.setAcknowledgmentNumber((int) ackNum);
         this.buffer.putInt(IP4_HEADER_SIZE + 8, (int) ackNum);
 
         // Reset header size, since we don't need options
         byte dataOffset = (byte) (TCP_HEADER_SIZE << 2);
         System.out.println(dataOffset);
         tcpHeader.dataOffsetAndReserved = dataOffset;
-        //        this.setOffset(dataOffset);
 
         this.buffer.put(IP4_HEADER_SIZE + 12, dataOffset);
 
@@ -138,9 +134,9 @@ public class Packet {
         this.buffer.putShort(IP4_HEADER_SIZE + 16, (short) sum);
     }
 
-    private void fillHeader(ByteBuffer buffer) {
-        ipHeader.fillHeader(buffer);
-        tcpHeader.fillHeader(buffer);
+    private void fillHeader() {
+        ipHeader.fillHeader();
+        tcpHeader.fillHeader();
     }
 
     public static class IP4Header {
@@ -187,6 +183,8 @@ public class Packet {
             }
         }
 
+        private ByteBuffer buffer;
+
         private IP4Header(ByteBuffer buffer) throws UnknownHostException {
             byte versionAndIHL = buffer.get();
             this.version = (byte) (versionAndIHL >> 4);
@@ -209,23 +207,22 @@ public class Packet {
 
             buffer.get(addressBytes, 0, 4);
             this.destinationAddress = InetAddress.getByAddress(addressBytes);
-
-            //this.optionsAndPadding = buffer.getInt();
+            this.buffer = buffer;
         }
 
-        public void fillHeader(ByteBuffer buffer) {
-            buffer.put((byte) (this.version << 4 | this.IHL));
-            buffer.put((byte) this.typeOfService);
-            buffer.putShort((short) this.totalLength);
+        public void fillHeader() {
+            this.buffer.put((byte) (this.version << 4 | this.IHL));
+            this.buffer.put((byte) this.typeOfService);
+            this.buffer.putShort((short) this.totalLength);
 
-            buffer.putInt(this.identificationAndFlagsAndFragmentOffset);
+            this.buffer.putInt(this.identificationAndFlagsAndFragmentOffset);
 
-            buffer.put((byte) this.TTL);
-            buffer.put((byte) this.protocol.getNumber());
-            buffer.putShort((short) this.headerChecksum);
+            this.buffer.put((byte) this.TTL);
+            this.buffer.put((byte) this.protocol.getNumber());
+            this.buffer.putShort((short) this.headerChecksum);
 
-            buffer.put(this.sourceAddress.getAddress());
-            buffer.put(this.destinationAddress.getAddress());
+            this.buffer.put(this.sourceAddress.getAddress());
+            this.buffer.put(this.destinationAddress.getAddress());
         }
 
         @Override
@@ -269,6 +266,7 @@ public class Packet {
         public int urgentPointer;
 
         public byte[] optionsAndPadding;
+        private ByteBuffer buffer;
 
         private TCPHeader(ByteBuffer buffer) {
             this.sourcePort = BitUtils.getUnsignedShort(buffer.getShort());
@@ -290,6 +288,7 @@ public class Packet {
                 optionsAndPadding = new byte[optionsLength];
                 buffer.get(optionsAndPadding, 0, optionsLength);
             }
+            this.buffer = buffer;
         }
 
         public boolean isFIN() {
@@ -316,19 +315,19 @@ public class Packet {
             return (flags & URG) == URG;
         }
 
-        private void fillHeader(ByteBuffer buffer) {
-            buffer.putShort((short) sourcePort);
-            buffer.putShort((short) destinationPort);
+        private void fillHeader() {
+            this.buffer.putShort((short) sourcePort);
+            this.buffer.putShort((short) destinationPort);
 
-            buffer.putInt((int) sequenceNumber);
-            buffer.putInt((int) acknowledgementNumber);
+            this.buffer.putInt((int) sequenceNumber);
+            this.buffer.putInt((int) acknowledgementNumber);
 
-            buffer.put(dataOffsetAndReserved);
-            buffer.put(flags);
-            buffer.putShort((short) window);
+            this.buffer.put(dataOffsetAndReserved);
+            this.buffer.put(flags);
+            this.buffer.putShort((short) window);
 
-            buffer.putShort((short) checksum);
-            buffer.putShort((short) urgentPointer);
+            this.buffer.putShort((short) checksum);
+            this.buffer.putShort((short) urgentPointer);
         }
 
         @Override
