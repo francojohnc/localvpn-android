@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 
 public class IP4Header {
     public static final int SIZE = 20; // IP header size
-    
+
     public byte version;
     public byte IHL;
     public int headerLength;
@@ -22,8 +22,6 @@ public class IP4Header {
 
     public InetAddress sourceAddress;
     public InetAddress destinationAddress;
-
-    public int optionsAndPadding;
 
     public enum TransportProtocol {
         TCP(6),
@@ -107,5 +105,28 @@ public class IP4Header {
         sb.append(", destinationAddress=").append(destinationAddress.getHostAddress());
         sb.append('}');
         return sb.toString();
+    }
+
+    public void setTotalLength(int totalLength) {
+        this.buffer.putShort(2, (short) totalLength);
+    }
+
+    public void setChecksum(int checksum) {
+        this.buffer.putShort(0, (short) checksum);
+    }
+
+    // get calculated checksum
+    public int checksum() {
+        ByteBuffer buffer = this.buffer.duplicate();
+        int length = IP4Header.SIZE;
+        // clear the previous checksum
+        this.setChecksum((short) 0);
+        buffer.position(0);
+        int sum = 0;
+        while (length > 0) {
+            sum += BitUtils.getUnsignedShort(buffer.getShort());
+            length -= 2;
+        }
+        return (int) BitUtils.checksum(sum, 16);
     }
 }

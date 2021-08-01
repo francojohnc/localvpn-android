@@ -111,4 +111,19 @@ public class TCPHeader {
         return sb.toString();
     }
 
+    public void setFlags(byte flags) {
+        this.buffer.put(IP4Header.SIZE + 13, flags);
+    }
+
+    public void setSequenceNumber(long sequenceNumber) {
+        this.buffer.putInt(IP4Header.SIZE + 4, (int) sequenceNumber);
+    }
+
+    public void setAcknowledgmentNumber(long acknowledgmentNumber) {
+        this.buffer.putInt(IP4Header.SIZE + 8, (int) acknowledgmentNumber);
+    }
+
+    public void setOffset(byte offset) {
+        this.buffer.put(IP4Header.SIZE + 12, offset);
+    }
 }
