@@ -7,18 +7,18 @@ import java.nio.ByteBuffer;
 public class IPHeader {
     public static final int SIZE = 20; // IP header size
 
-    public byte version;
-    public byte IHL;
-    public int headerLength;
-    public short typeOfService;
-    public int totalLength;
+    private byte version;
+    private byte IHL;
+    private int headerLength;
+    private short typeOfService;
+    private int totalLength;
 
-    public int identificationAndFlagsAndFragmentOffset;
+    private int identificationAndFlagsAndFragmentOffset;
 
-    public short TTL;
+    private short TTL;
     private short protocolNum;
-    public TransportProtocol protocol;
-    public int headerChecksum;
+    private TransportProtocol protocol;
+    private int headerChecksum;
 
     public InetAddress sourceAddress;
     public InetAddress destinationAddress;
@@ -88,6 +88,7 @@ public class IPHeader {
 
         this.buffer.put(this.sourceAddress.getAddress());
         this.buffer.put(this.destinationAddress.getAddress());
+//        this.setDestinationAddress(this.destinationAddress);
     }
 
     @Override

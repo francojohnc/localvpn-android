@@ -21,9 +21,7 @@ public class PacketTest {
         buffer.flip();
         Packet packet = new Packet(buffer);
         packet.updateTCPBuffer((byte) (TCPHeader.SYN + TCPHeader.ACK), 2, 4, 0);
-        buffer.flip();
-        assertEquals(buffer.position(), 0);
-        assertEquals(buffer.limit(), 40);
+
 //        // IP Header
         assertEquals(packet.ipHeader.getVersion(), 4);
         assertEquals(packet.ipHeader.getLength(), 20);
@@ -56,6 +54,11 @@ public class PacketTest {
         assertEquals(packet.tcpHeader.getChecksum(), 10301); // 54530
 //        assertEquals(packet.tcpHeader.checksum(0), 10301); // 54530
         assertEquals(packet.tcpHeader.getUrgentPointer(), 0); // 0
+
+        buffer.flip();
+        // check position
+        assertEquals(buffer.position(), 0);
+        assertEquals(buffer.limit(), 40);
 
     }
 }
