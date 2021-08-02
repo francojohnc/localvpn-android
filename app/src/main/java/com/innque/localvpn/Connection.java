@@ -36,8 +36,8 @@ public class Connection implements Runnable {
         deviceToNetworkQueue = new ConcurrentLinkedQueue<>();
         networkToDeviceQueue = new ConcurrentLinkedQueue<>();
         executorService = Executors.newFixedThreadPool(2);
-        executorService.submit(new ConnectionOut(selector, deviceToNetworkQueue, networkToDeviceQueue, vpn));
-        executorService.submit(new ConnectionIn(selector, networkToDeviceQueue));
+        executorService.submit(new ConnectionSend(selector, deviceToNetworkQueue, networkToDeviceQueue, vpn));
+        executorService.submit(new ConnectionReceive(selector, networkToDeviceQueue));
     }
 
 
@@ -77,9 +77,6 @@ public class Connection implements Runnable {
                     Packet packet = new Packet(bufferNetwork);
                     bufferNetwork.limit(packet.ipHeader.getTotalLength());
                     bufferNetwork.position(0);
-//                    bufferNetwork.flip();
-//                    Log.e(TAG, "to Local: " + packet.tcpHeader.toString());
-//                    bufferNetwork.limit(40);
                     out.write(bufferNetwork);
                     dataReceived = true;
                     bufferNetwork.clear();

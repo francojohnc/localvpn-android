@@ -42,8 +42,6 @@ public class ConnectionOut implements Runnable {
 
                 InetAddress destinationAddress = packet.ipHeader.getDestinationAddress();
                 TCPHeader tcpHeader = packet.tcpHeader;
-                Log.d(TAG, "to Remote: " + packet.ipHeader.toString());
-                Log.d(TAG, "to Remote: " + packet.tcpHeader.toString());
 
                 int destinationPort = tcpHeader.getDestinationPort();
                 int sourcePort = tcpHeader.getSourcePort();
