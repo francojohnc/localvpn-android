@@ -51,7 +51,7 @@ public class ConnectionOut implements Runnable {
                 String ipAndPort = destinationAddress.getHostAddress() + ":" + destinationPort + ":" + sourcePort;
                 TCB tcb = TCB.getTCB(ipAndPort);
                 if (tcb == null) {
-                    initializeConnection(ipAndPort, destinationAddress, destinationPort, packet, tcpHeader);
+                    initializeConnection(ipAndPort, packet);
                 } else if (tcpHeader.isACK()) {
                     processACK(tcb, tcpHeader, buffer);
                 }
@@ -64,9 +64,10 @@ public class ConnectionOut implements Runnable {
     }
 
 
-    private void initializeConnection(String ipAndPort, InetAddress destinationAddress, int destinationPort,
-                                      Packet packet, TCPHeader tcpHeader)
-            throws IOException {
+    private void initializeConnection(String ipAndPort, Packet packet) throws IOException {
+        TCPHeader tcpHeader = packet.tcpHeader;
+        InetAddress destinationAddress = packet.ipHeader.destinationAddress;
+        int destinationPort = tcpHeader.destinationPort;
         packet.swapSourceAndDestination();
         if (tcpHeader.isSYN()) {
             SocketChannel channel = SocketChannel.open();

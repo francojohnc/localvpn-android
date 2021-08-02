@@ -28,8 +28,11 @@ public class TCPHeader {
 
     public byte[] optionsAndPadding;
     private ByteBuffer buffer;
+    private IP4Header ipHeader;
 
-    public TCPHeader(ByteBuffer buffer) {
+    public TCPHeader(ByteBuffer buffer, IP4Header ipHeader) {
+        this.buffer = buffer;
+        this.ipHeader = ipHeader;
         this.sourcePort = BitUtils.getUnsignedShort(buffer.getShort());
         this.destinationPort = BitUtils.getUnsignedShort(buffer.getShort());
 
@@ -49,7 +52,6 @@ public class TCPHeader {
             optionsAndPadding = new byte[optionsLength];
             buffer.get(optionsAndPadding, 0, optionsLength);
         }
-        this.buffer = buffer;
     }
 
     public boolean isFIN() {
@@ -125,5 +127,59 @@ public class TCPHeader {
 
     public void setOffset(byte offset) {
         this.buffer.put(IP4Header.SIZE + 12, offset);
+    }
+
+    // get calculated checksum
+    public int checksum(int payloadSize) {
+        // IP Header
+        byte[] sourceAddress = this.ipHeader.sourceAddress.getAddress();
+        byte[] destinationAddress = this.ipHeader.destinationAddress.getAddress();
+
+
+        int ipLength = IP4Header.SIZE;
+        int totalLength = TCPHeader.SIZE + payloadSize;
+        short protocol = 6;
+        // TCP Header
+        int tcpLength = TCPHeader.SIZE; // TCP Header length
+        // Data
+        int offset = ipLength + tcpLength; // beginning position of data
+        int size = totalLength - offset; // size of data
+        // PSEUDO Header
+        int pseudoLength = 12;
+        ByteBuffer pseudo = ByteBuffer.allocate(pseudoLength);
+        pseudo.put(sourceAddress);
+        pseudo.put(destinationAddress);
+        pseudo.put((byte) 0x0); // reserve
+        pseudo.put((byte) protocol); // stores the protocol number
+        pseudo.putChar((char) (tcpLength + size)); // store the length of the packet.
+        // sum pseudo-header
+        int sum = 0;
+        pseudo.position(0);
+        while (pseudoLength > 0) {
+            sum += BitUtils.getUnsignedShort(pseudo.getShort());
+            pseudoLength -= 2;
+        }
+        // sum tcp-header
+        // clear the previous checksum
+        this.setChecksum((short) 0);
+        this.buffer.position(ipLength);
+        while (tcpLength > 0) {
+            sum += BitUtils.getUnsignedShort(this.buffer.getShort());
+            tcpLength -= 2;
+        }
+//        // sum data
+//        while (size > 0) {
+//            sum += BitUtils.getUnsignedShort(this.buffer.getShort());
+//            size -= 2;
+//        }
+//        // if data size is odd
+//        if (size > 0) {
+//            sum += BitUtils.getUnsignedByte(buffer.get()) << 8;
+//        }
+        return (int) BitUtils.checksum(sum, 16);
+    }
+
+    public void setChecksum(int checksum) {
+        this.buffer.putShort(IP4Header.SIZE + 16, (short) checksum);
     }
 }

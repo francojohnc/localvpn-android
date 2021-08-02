@@ -51,6 +51,7 @@ public class IP4Header {
     private ByteBuffer buffer;
 
     public IP4Header(ByteBuffer buffer) throws UnknownHostException {
+        this.buffer = buffer;
         byte versionAndIHL = buffer.get();
         this.version = (byte) (versionAndIHL >> 4);
         this.IHL = (byte) (versionAndIHL & 0x0F);
@@ -72,7 +73,6 @@ public class IP4Header {
 
         buffer.get(addressBytes, 0, 4);
         this.destinationAddress = InetAddress.getByAddress(addressBytes);
-        this.buffer = buffer;
     }
 
     public void fillHeader() {

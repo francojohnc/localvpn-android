@@ -75,8 +75,7 @@ public class ConnectionIn implements Runnable {
             ByteBuffer buffer = packet.buffer;
             buffer.position(HEADER_SIZE);
             SocketChannel channel = (SocketChannel) key.channel();
-            int size;
-            size = channel.read(buffer);
+            int size = channel.read(buffer);
             packet.updateTCPBuffer((byte) (TCPHeader.PSH + TCPHeader.ACK), tcb.lSequenceNum, tcb.lAcknowledgement, size);
             tcb.lSequenceNum += size; // Next sequence number
             packet.buffer.position(HEADER_SIZE + size);

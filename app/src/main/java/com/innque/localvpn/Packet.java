@@ -16,9 +16,9 @@ public class Packet {
 
 
     public Packet(ByteBuffer buffer) throws UnknownHostException {
-        this.ipHeader = new IP4Header(buffer);
-        this.tcpHeader = new TCPHeader(buffer);
         this.buffer = buffer;
+        this.ipHeader = new IP4Header(buffer);
+        this.tcpHeader = new TCPHeader(buffer, this.ipHeader);
     }
 
 
@@ -48,6 +48,7 @@ public class Packet {
         this.tcpHeader.setOffset(dataOffset);
 
         updateTCPChecksum(payloadSize);
+//        tcpHeader.setChecksum(tcpHeader.checksum(payloadSize));
 
         int ip4TotalLength = IP4Header.SIZE + TCPHeader.SIZE + payloadSize;
         ipHeader.totalLength = ip4TotalLength;
@@ -56,10 +57,10 @@ public class Packet {
     }
 
     private void updateTCPChecksum(int payloadSize) {
-        int sum = 0;
+        int sum;
         int tcpLength = TCPHeader.SIZE + payloadSize;
 
-        // Calculate pseudo-header checksum
+        // // PSEUDO Header
         ByteBuffer buffer = ByteBuffer.wrap(ipHeader.sourceAddress.getAddress());
         sum = BitUtils.getUnsignedShort(buffer.getShort()) + BitUtils.getUnsignedShort(buffer.getShort());
 
@@ -69,24 +70,20 @@ public class Packet {
         sum += IP4Header.TransportProtocol.TCP.getNumber() + tcpLength;
 
         buffer = this.buffer.duplicate();
-        // Clear previous checksum
-        buffer.putShort(IP4Header.SIZE + 16, (short) 0);
+        // clear the previous checksum
+        tcpHeader.setChecksum(0);
 
-        // Calculate TCP segment checksum
+        // sum tcp-header
         buffer.position(IP4Header.SIZE);
         while (tcpLength > 1) {
             sum += BitUtils.getUnsignedShort(buffer.getShort());
             tcpLength -= 2;
         }
-        if (tcpLength > 0)
+        // if data size is odd
+        if (tcpLength > 0) {
             sum += BitUtils.getUnsignedByte(buffer.get()) << 8;
-
-        while (sum >> 16 > 0)
-            sum = (sum & 0xFFFF) + (sum >> 16);
-
-        sum = ~sum;
-        tcpHeader.checksum = sum;
-        this.buffer.putShort(IP4Header.SIZE + 16, (short) sum);
+        }
+        tcpHeader.setChecksum((int) BitUtils.checksum(sum, 16));
     }
 
     private void fillHeader() {
