@@ -28,9 +28,9 @@ public class TCPHeader {
 
     public byte[] optionsAndPadding;
     private ByteBuffer buffer;
-    private IP4Header ipHeader;
+    private IPHeader ipHeader;
 
-    public TCPHeader(ByteBuffer buffer, IP4Header ipHeader) {
+    public TCPHeader(ByteBuffer buffer, IPHeader ipHeader) {
         this.buffer = buffer;
         this.ipHeader = ipHeader;
         this.sourcePort = BitUtils.getUnsignedShort(buffer.getShort());
@@ -113,20 +113,17 @@ public class TCPHeader {
         return sb.toString();
     }
 
-    public void setFlags(byte flags) {
-        this.buffer.put(IP4Header.SIZE + 13, flags);
-    }
 
     public void setSequenceNumber(long sequenceNumber) {
-        this.buffer.putInt(IP4Header.SIZE + 4, (int) sequenceNumber);
+        this.buffer.putInt(IPHeader.SIZE + 4, (int) sequenceNumber);
     }
 
     public void setAcknowledgmentNumber(long acknowledgmentNumber) {
-        this.buffer.putInt(IP4Header.SIZE + 8, (int) acknowledgmentNumber);
+        this.buffer.putInt(IPHeader.SIZE + 8, (int) acknowledgmentNumber);
     }
 
     public void setOffset(byte offset) {
-        this.buffer.put(IP4Header.SIZE + 12, offset);
+        this.buffer.put(IPHeader.SIZE + 12, offset);
     }
 
     // get calculated checksum
@@ -136,7 +133,7 @@ public class TCPHeader {
         byte[] destinationAddress = this.ipHeader.destinationAddress.getAddress();
 
 
-        int ipLength = IP4Header.SIZE;
+        int ipLength = IPHeader.SIZE;
         int totalLength = TCPHeader.SIZE + payloadSize;
         short protocol = 6;
         // TCP Header
@@ -167,19 +164,126 @@ public class TCPHeader {
             sum += BitUtils.getUnsignedShort(this.buffer.getShort());
             tcpLength -= 2;
         }
-//        // sum data
-//        while (size > 0) {
-//            sum += BitUtils.getUnsignedShort(this.buffer.getShort());
-//            size -= 2;
-//        }
-//        // if data size is odd
-//        if (size > 0) {
-//            sum += BitUtils.getUnsignedByte(buffer.get()) << 8;
-//        }
         return (int) BitUtils.checksum(sum, 16);
     }
 
     public void setChecksum(int checksum) {
-        this.buffer.putShort(IP4Header.SIZE + 16, (short) checksum);
+        this.buffer.putShort(IPHeader.SIZE + 16, (short) checksum);
     }
+
+
+    public void setSourcePort(short sourcePort) {
+        this.buffer.putShort(IPHeader.SIZE,sourcePort);
+    }
+
+    public int getSourcePort() {
+        this.buffer.position(IPHeader.SIZE);
+        return BitUtils.getUnsignedShort(buffer.getShort());
+    }
+
+    public void setDestinationPort(short destinationPort) {
+        this.buffer.putShort(IPHeader.SIZE + 2,destinationPort);
+    }
+
+    public int getDestinationPort() {
+        this.buffer.position(IPHeader.SIZE + 2);
+        return BitUtils.getUnsignedShort(buffer.getShort());
+    }
+
+    public void setSequenceNumber(int sequenceNumber) {
+        this.buffer.putInt(IPHeader.SIZE + 4,sequenceNumber);
+    }
+
+    public long getSequenceNumber() {
+        this.buffer.position(IPHeader.SIZE + 4);
+        return BitUtils.getUnsignedInt(buffer.getInt());
+    }
+
+    public void setAcknowledgmentNumber(int acknowledgmentNumber) {
+        this.buffer.putInt(IPHeader.SIZE + 8,acknowledgmentNumber);
+    }
+
+    public long getAcknowledgmentNumber() {
+        this.buffer.position(IPHeader.SIZE + 8);
+        return BitUtils.getUnsignedInt(buffer.getInt());
+    }
+
+
+    public void setOffset(int offset) {
+        this.buffer.put(IPHeader.SIZE + 12,(byte) ((offset / 4) << 4));
+    }
+
+    public int getOffset() {
+        this.buffer.position(IPHeader.SIZE + 12);
+        short offsetAndReserved = BitUtils.getUnsignedByte(buffer.get());
+        return (offsetAndReserved >> 4) * 4;
+    }
+
+    public void setReserve(byte reserve) {
+        this.buffer.position(IPHeader.SIZE + 12);
+        short offsetAndReserved = BitUtils.getUnsignedByte(buffer.get());
+        this.buffer.put(IPHeader.SIZE + 12,(byte) (offsetAndReserved + reserve));
+    }
+
+    public byte getReserve() {
+        this.buffer.position(IPHeader.SIZE + 12);
+        short offsetAndReserved = BitUtils.getUnsignedByte(buffer.get());
+        return (byte) (offsetAndReserved & 0b1111);
+    }
+
+    public void setFlags(byte flags) {
+        this.buffer.put(IPHeader.SIZE + 13,flags);
+    }
+
+    public byte getFlags() {
+        this.buffer.position(IPHeader.SIZE + 13);
+        return this.buffer.get();
+    }
+
+    public void setWindow(short window) {
+        this.buffer.putShort(IPHeader.SIZE + 14,window);
+    }
+
+    public int getWindow() {
+        this.buffer.position(IPHeader.SIZE + 14);
+        return BitUtils.getUnsignedShort(buffer.getShort());
+    }
+
+
+
+    public int getChecksum() {
+        this.buffer.position(IPHeader.SIZE + 16);
+        return BitUtils.getUnsignedShort(buffer.getShort());
+    }
+
+    public void setUrgentPointer(short urgentPointer) {
+        this.buffer.putShort(IPHeader.SIZE + 18,urgentPointer);
+    }
+
+    public int getUrgentPointer() {
+        this.buffer.position(IPHeader.SIZE + 18);
+        return BitUtils.getUnsignedShort(buffer.getShort());
+    }
+
+    public byte[] getOptionsAndPadding() {
+        this.buffer.position(IPHeader.SIZE + 19);
+        int optionsLength = this.getOffset() - TCPHeader.SIZE;
+        byte[] optionsAndPadding = new byte[0];
+        if (optionsLength > 0) {
+            optionsAndPadding = new byte[optionsLength];
+            buffer.get(optionsAndPadding, 0, optionsLength);
+        }
+        return optionsAndPadding;
+    }
+
+
+
+
+    public void swapPort() {
+        int source = this.getSourcePort();
+        int destination = this.getDestinationPort();
+        this.setDestinationPort((short) source);
+        this.setSourcePort((short) destination);
+    }
+
 }

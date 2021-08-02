@@ -10,14 +10,14 @@ import java.nio.ByteBuffer;
 
 public class Packet {
 
-    public IP4Header ipHeader;
+    public IPHeader ipHeader;
     public TCPHeader tcpHeader;
     public ByteBuffer buffer;
 
 
     public Packet(ByteBuffer buffer) throws UnknownHostException {
         this.buffer = buffer;
-        this.ipHeader = new IP4Header(buffer);
+        this.ipHeader = new IPHeader(buffer);
         this.tcpHeader = new TCPHeader(buffer, this.ipHeader);
     }
 
@@ -48,9 +48,8 @@ public class Packet {
         this.tcpHeader.setOffset(dataOffset);
 
         updateTCPChecksum(payloadSize);
-//        tcpHeader.setChecksum(tcpHeader.checksum(payloadSize));
 
-        int ip4TotalLength = IP4Header.SIZE + TCPHeader.SIZE + payloadSize;
+        int ip4TotalLength = IPHeader.SIZE + TCPHeader.SIZE + payloadSize;
         ipHeader.totalLength = ip4TotalLength;
         ipHeader.setTotalLength(ip4TotalLength);
         ipHeader.setChecksum(ipHeader.checksum());
@@ -67,14 +66,14 @@ public class Packet {
         buffer = ByteBuffer.wrap(ipHeader.destinationAddress.getAddress());
         sum += BitUtils.getUnsignedShort(buffer.getShort()) + BitUtils.getUnsignedShort(buffer.getShort());
 
-        sum += IP4Header.TransportProtocol.TCP.getNumber() + tcpLength;
+        sum += IPHeader.TransportProtocol.TCP.getNumber() + tcpLength;
 
         buffer = this.buffer.duplicate();
         // clear the previous checksum
         tcpHeader.setChecksum(0);
 
         // sum tcp-header
-        buffer.position(IP4Header.SIZE);
+        buffer.position(IPHeader.SIZE);
         while (tcpLength > 1) {
             sum += BitUtils.getUnsignedShort(buffer.getShort());
             tcpLength -= 2;
