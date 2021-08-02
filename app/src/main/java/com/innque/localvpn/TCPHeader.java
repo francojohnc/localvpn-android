@@ -12,106 +12,107 @@ public class TCPHeader {
     public static final int ACK = 0x10;
     public static final int URG = 0x20;
 
-    public int sourcePort;
-    public int destinationPort;
-
-    public long sequenceNumber;
-    public long acknowledgementNumber;
-
-    public byte dataOffsetAndReserved;
-    public int headerLength;
-    public byte flags;
-    public int window;
-
-    public int checksum;
-    public int urgentPointer;
-
-    public byte[] optionsAndPadding;
+    //    public int sourcePort;
+//    public int destinationPort;
+//
+//    public long sequenceNumber;
+//    public long acknowledgementNumber;
+//
+//    public byte dataOffsetAndReserved;
+//    public int headerLength;
+//    public byte flags;
+//    public int window;
+//
+//    public int checksum;
+//    public int urgentPointer;
+//
+//    public byte[] optionsAndPadding;
     private ByteBuffer buffer;
     private IPHeader ipHeader;
 
     public TCPHeader(ByteBuffer buffer, IPHeader ipHeader) {
         this.buffer = buffer;
         this.ipHeader = ipHeader;
-        this.sourcePort = BitUtils.getUnsignedShort(buffer.getShort());
-        this.destinationPort = BitUtils.getUnsignedShort(buffer.getShort());
-
-        this.sequenceNumber = BitUtils.getUnsignedInt(buffer.getInt());
-        this.acknowledgementNumber = BitUtils.getUnsignedInt(buffer.getInt());
-
-        this.dataOffsetAndReserved = buffer.get();
-        this.headerLength = (this.dataOffsetAndReserved & 0xF0) >> 2;
-        this.flags = buffer.get();
-        this.window = BitUtils.getUnsignedShort(buffer.getShort());
-
-        this.checksum = BitUtils.getUnsignedShort(buffer.getShort());
-        this.urgentPointer = BitUtils.getUnsignedShort(buffer.getShort());
-
-        int optionsLength = this.headerLength - TCPHeader.SIZE;
-        if (optionsLength > 0) {
-            optionsAndPadding = new byte[optionsLength];
-            buffer.get(optionsAndPadding, 0, optionsLength);
-        }
+//        this.sourcePort = BitUtils.getUnsignedShort(buffer.getShort());
+//        this.destinationPort = BitUtils.getUnsignedShort(buffer.getShort());
+//
+//        this.sequenceNumber = BitUtils.getUnsignedInt(buffer.getInt());
+//        this.acknowledgementNumber = BitUtils.getUnsignedInt(buffer.getInt());
+//
+//        this.dataOffsetAndReserved = buffer.get();
+//        this.headerLength = (this.dataOffsetAndReserved & 0xF0) >> 2;
+//        this.flags = buffer.get();
+//        this.window = BitUtils.getUnsignedShort(buffer.getShort());
+//
+//        this.checksum = BitUtils.getUnsignedShort(buffer.getShort());
+//        this.urgentPointer = BitUtils.getUnsignedShort(buffer.getShort());
+//
+//        int optionsLength = this.headerLength - TCPHeader.SIZE;
+//        if (optionsLength > 0) {
+//            optionsAndPadding = new byte[optionsLength];
+//            buffer.get(optionsAndPadding, 0, optionsLength);
+//        }
     }
 
     public boolean isFIN() {
-        return (flags & FIN) == FIN;
+        return (this.getFlags() & FIN) == FIN;
     }
 
     public boolean isSYN() {
-        return (flags & SYN) == SYN;
+        return (this.getFlags() & SYN) == SYN;
     }
 
     public boolean isRST() {
-        return (flags & RST) == RST;
+        return (this.getFlags() & RST) == RST;
     }
 
     public boolean isPSH() {
-        return (flags & PSH) == PSH;
+        return (this.getFlags() & PSH) == PSH;
     }
 
     public boolean isACK() {
-        return (flags & ACK) == ACK;
+        return (this.getFlags() & ACK) == ACK;
     }
 
     public boolean isURG() {
-        return (flags & URG) == URG;
+        return (this.getFlags() & URG) == URG;
     }
 
-    public void fillHeader() {
-        this.buffer.putShort((short) sourcePort);
-        this.buffer.putShort((short) destinationPort);
 
-        this.buffer.putInt((int) sequenceNumber);
-        this.buffer.putInt((int) acknowledgementNumber);
+//    public void fillHeader() {
+//        this.buffer.putShort((short) sourcePort);
+//        this.buffer.putShort((short) destinationPort);
+//
+//        this.buffer.putInt((int) sequenceNumber);
+//        this.buffer.putInt((int) acknowledgementNumber);
+//
+//        this.buffer.put(dataOffsetAndReserved);
+//        this.buffer.put(flags);
+//        this.buffer.putShort((short) window);
+//
+//        this.buffer.putShort((short) checksum);
+//        this.buffer.putShort((short) urgentPointer);
+//    }
 
-        this.buffer.put(dataOffsetAndReserved);
-        this.buffer.put(flags);
-        this.buffer.putShort((short) window);
-
-        this.buffer.putShort((short) checksum);
-        this.buffer.putShort((short) urgentPointer);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("TCPHeader{");
-        sb.append("sourcePort:").append(sourcePort);
-        sb.append(",destinationPort:").append(destinationPort);
-        sb.append(",sequenceNumber:").append(sequenceNumber);
-        sb.append(",acknowledgementNumber:").append(acknowledgementNumber);
-        sb.append(",offset:").append(headerLength);
-        if (isFIN()) sb.append(",FIN:").append(true);
-        if (isSYN()) sb.append(",SYN:").append(true);
-        if (isRST()) sb.append(",RST:").append(true);
-        if (isPSH()) sb.append(",PSH:").append(true);
-        if (isACK()) sb.append(",ACK:").append(true);
-        if (isURG()) sb.append(",URG:").append(true);
-        sb.append(",window:").append(window);
-        sb.append(",checksum:").append(checksum);
-        sb.append('}');
-        return sb.toString();
-    }
+//    @Override
+//    public String toString() {
+//        StringBuilder sb = new StringBuilder("TCPHeader{");
+//        sb.append("sourcePort:").append(sourcePort);
+//        sb.append(",destinationPort:").append(destinationPort);
+//        sb.append(",sequenceNumber:").append(sequenceNumber);
+//        sb.append(",acknowledgementNumber:").append(acknowledgementNumber);
+//        sb.append(",offset:").append(headerLength);
+//        if (isFIN()) sb.append(",FIN:").append(true);
+//        if (isSYN()) sb.append(",SYN:").append(true);
+//        if (isRST()) sb.append(",RST:").append(true);
+//        if (isPSH()) sb.append(",PSH:").append(true);
+//        if (isACK()) sb.append(",ACK:").append(true);
+//        if (isURG()) sb.append(",URG:").append(true);
+//        sb.append(",window:").append(window);
+//        sb.append(",checksum:").append(checksum);
+//        sb.append('}');
+//        return sb.toString();
+//    }
 
 
     public void setSequenceNumber(long sequenceNumber) {
@@ -132,13 +133,13 @@ public class TCPHeader {
         int tcpLength = TCPHeader.SIZE + payloadSize;
 
         // // PSEUDO Header
-        ByteBuffer buffer = ByteBuffer.wrap(ipHeader.sourceAddress.getAddress());
+        ByteBuffer buffer = ByteBuffer.wrap(ipHeader.getSourceAddress().getAddress());
         sum = BitUtils.getUnsignedShort(buffer.getShort()) + BitUtils.getUnsignedShort(buffer.getShort());
 
-        buffer = ByteBuffer.wrap(ipHeader.destinationAddress.getAddress());
+        buffer = ByteBuffer.wrap(ipHeader.getDestinationAddress().getAddress());
         sum += BitUtils.getUnsignedShort(buffer.getShort()) + BitUtils.getUnsignedShort(buffer.getShort());
 
-        sum += IPHeader.TransportProtocol.TCP.getNumber() + tcpLength;
+        sum += this.ipHeader.getProtocol() + tcpLength;
 
         buffer = this.buffer.duplicate();
         // clear the previous checksum
@@ -163,7 +164,7 @@ public class TCPHeader {
 
 
     public void setSourcePort(short sourcePort) {
-        this.buffer.putShort(IPHeader.SIZE,sourcePort);
+        this.buffer.putShort(IPHeader.SIZE, sourcePort);
     }
 
     public int getSourcePort() {
@@ -172,7 +173,7 @@ public class TCPHeader {
     }
 
     public void setDestinationPort(short destinationPort) {
-        this.buffer.putShort(IPHeader.SIZE + 2,destinationPort);
+        this.buffer.putShort(IPHeader.SIZE + 2, destinationPort);
     }
 
     public int getDestinationPort() {
@@ -181,7 +182,7 @@ public class TCPHeader {
     }
 
     public void setSequenceNumber(int sequenceNumber) {
-        this.buffer.putInt(IPHeader.SIZE + 4,sequenceNumber);
+        this.buffer.putInt(IPHeader.SIZE + 4, sequenceNumber);
     }
 
     public long getSequenceNumber() {
@@ -190,7 +191,7 @@ public class TCPHeader {
     }
 
     public void setAcknowledgmentNumber(int acknowledgmentNumber) {
-        this.buffer.putInt(IPHeader.SIZE + 8,acknowledgmentNumber);
+        this.buffer.putInt(IPHeader.SIZE + 8, acknowledgmentNumber);
     }
 
     public long getAcknowledgmentNumber() {
@@ -200,7 +201,7 @@ public class TCPHeader {
 
 
     public void setOffset(int offset) {
-        this.buffer.put(IPHeader.SIZE + 12,(byte) ((offset / 4) << 4));
+        this.buffer.put(IPHeader.SIZE + 12, (byte) ((offset / 4) << 4));
     }
 
     public int getOffset() {
@@ -212,7 +213,7 @@ public class TCPHeader {
     public void setReserve(byte reserve) {
         this.buffer.position(IPHeader.SIZE + 12);
         short offsetAndReserved = BitUtils.getUnsignedByte(buffer.get());
-        this.buffer.put(IPHeader.SIZE + 12,(byte) (offsetAndReserved + reserve));
+        this.buffer.put(IPHeader.SIZE + 12, (byte) (offsetAndReserved + reserve));
     }
 
     public byte getReserve() {
@@ -222,7 +223,7 @@ public class TCPHeader {
     }
 
     public void setFlags(byte flags) {
-        this.buffer.put(IPHeader.SIZE + 13,flags);
+        this.buffer.put(IPHeader.SIZE + 13, flags);
     }
 
     public byte getFlags() {
@@ -231,7 +232,7 @@ public class TCPHeader {
     }
 
     public void setWindow(short window) {
-        this.buffer.putShort(IPHeader.SIZE + 14,window);
+        this.buffer.putShort(IPHeader.SIZE + 14, window);
     }
 
     public int getWindow() {
@@ -240,14 +241,13 @@ public class TCPHeader {
     }
 
 
-
     public int getChecksum() {
         this.buffer.position(IPHeader.SIZE + 16);
         return BitUtils.getUnsignedShort(buffer.getShort());
     }
 
     public void setUrgentPointer(short urgentPointer) {
-        this.buffer.putShort(IPHeader.SIZE + 18,urgentPointer);
+        this.buffer.putShort(IPHeader.SIZE + 18, urgentPointer);
     }
 
     public int getUrgentPointer() {
@@ -267,8 +267,6 @@ public class TCPHeader {
     }
 
 
-
-
     public void swapPort() {
         int source = this.getSourcePort();
         int destination = this.getDestinationPort();
@@ -276,4 +274,25 @@ public class TCPHeader {
         this.setSourcePort((short) destination);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("TCPHeader{");
+        sb.append("sourcePort:").append(getSourcePort());
+        sb.append(",destinationPort:").append(getDestinationPort());
+        sb.append(",sequenceNumber:").append(getSequenceNumber());
+        sb.append(",acknowledgementNumber:").append(getAcknowledgmentNumber());
+        sb.append(",offset:").append(getOffset());
+        sb.append(",flags:").append(getFlags());
+        if (isFIN()) sb.append(",FIN:").append(true);
+        if (isSYN()) sb.append(",SYN:").append(true);
+        if (isRST()) sb.append(",RST:").append(true);
+        if (isPSH()) sb.append(",PSH:").append(true);
+        if (isACK()) sb.append(",ACK:").append(true);
+        if (isURG()) sb.append(",URG:").append(true);
+        sb.append(",window:").append(getWindow());
+        sb.append(",checksum:").append(getChecksum());
+        sb.append(",urgentPointer:").append(getUrgentPointer());
+        sb.append('}');
+        return sb.toString();
+    }
 }

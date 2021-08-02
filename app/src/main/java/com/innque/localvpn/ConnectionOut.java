@@ -40,20 +40,20 @@ public class ConnectionOut implements Runnable {
 
                 ByteBuffer buffer = packet.buffer;
 
-                InetAddress destinationAddress = packet.ipHeader.destinationAddress;
+                InetAddress destinationAddress = packet.ipHeader.getDestinationAddress();
                 TCPHeader tcpHeader = packet.tcpHeader;
                 Log.d(TAG, "to Remote: " + packet.ipHeader.toString());
-                Log.d(TAG, "to Remote: " + tcpHeader.toString());
+                Log.d(TAG, "to Remote: " + packet.tcpHeader.toString());
 
-                int destinationPort = tcpHeader.destinationPort;
-                int sourcePort = tcpHeader.sourcePort;
+                int destinationPort = tcpHeader.getDestinationPort();
+                int sourcePort = tcpHeader.getSourcePort();
 
                 String ipAndPort = destinationAddress.getHostAddress() + ":" + destinationPort + ":" + sourcePort;
                 TCB tcb = TCB.getTCB(ipAndPort);
                 if (tcb == null) {
                     initializeConnection(ipAndPort, packet);
                 } else if (tcpHeader.isACK()) {
-                    processACK(tcb, tcpHeader, buffer);
+                    processACK(tcb, tcpHeader, buffer, packet);
                 }
 
             }
@@ -66,16 +66,16 @@ public class ConnectionOut implements Runnable {
 
     private void initializeConnection(String ipAndPort, Packet packet) throws IOException {
         TCPHeader tcpHeader = packet.tcpHeader;
-        InetAddress destinationAddress = packet.ipHeader.destinationAddress;
-        int destinationPort = tcpHeader.destinationPort;
+        InetAddress destinationAddress = packet.ipHeader.getDestinationAddress();
+        int destinationPort = tcpHeader.getDestinationPort();
         packet.swapSourceAndDestination();
         if (tcpHeader.isSYN()) {
             SocketChannel channel = SocketChannel.open();
             channel.configureBlocking(false);
             vpn.protect(channel.socket());
 
-            TCB tcb = new TCB(ipAndPort, random.nextInt(Short.MAX_VALUE + 1), tcpHeader.sequenceNumber, tcpHeader.sequenceNumber + 1,
-                    tcpHeader.acknowledgementNumber, channel, packet);
+            TCB tcb = new TCB(ipAndPort, random.nextInt(Short.MAX_VALUE + 1), tcpHeader.getSequenceNumber(), tcpHeader.getSequenceNumber() + 1,
+                    tcpHeader.getAcknowledgmentNumber(), channel, packet);
             TCB.putTCB(ipAndPort, tcb);
 
             channel.connect(new InetSocketAddress(destinationAddress, destinationPort));
@@ -86,8 +86,9 @@ public class ConnectionOut implements Runnable {
     }
 
 
-    private void processACK(TCB tcb, TCPHeader tcpHeader, ByteBuffer payloadBuffer) throws IOException {
-        int payloadSize = payloadBuffer.limit() - payloadBuffer.position();
+    private void processACK(TCB tcb, TCPHeader tcpHeader, ByteBuffer payloadBuffer, Packet packet2) throws IOException {
+        byte[] data = packet2.getData();
+        int payloadSize = data.length;
         synchronized (tcb) {
             SocketChannel outputChannel = tcb.channel;
             if (tcb.status == TCB.TCBStatus.SYN_RECEIVED) {
@@ -109,10 +110,10 @@ public class ConnectionOut implements Runnable {
                     outputChannel.write(payloadBuffer);
             } catch (IOException e) {
             }
-            tcb.lAcknowledgement = tcpHeader.sequenceNumber + payloadSize;
-            tcb.rAcknowledgement = tcpHeader.acknowledgementNumber;
+            tcb.lAcknowledgement = tcpHeader.getSequenceNumber() + payloadSize;
+            tcb.rAcknowledgement = tcpHeader.getAcknowledgmentNumber();
             Packet packet = tcb.packet;
-            packet.updateTCPBuffer((byte) TCPHeader.ACK, tcb.lSequenceNum, tcb.lAcknowledgement, 0);
+            packet.update((byte) TCPHeader.ACK, tcb.lSequenceNum, tcb.lAcknowledgement, 0);
             networkToDeviceQueue.offer(packet.buffer);
         }
     }

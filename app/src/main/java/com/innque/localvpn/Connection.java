@@ -64,7 +64,7 @@ public class Connection implements Runnable {
                     dataSent = true;
                     buffer.flip();
                     Packet packet = new Packet(buffer);
-                    if (packet.ipHeader.destinationAddress.getHostName().equals("192.168.254.108")) {
+                    if (packet.ipHeader.getDestinationAddress().getHostName().equals("192.168.254.108")) {
                         deviceToNetworkQueue.offer(packet);
                     } else {
                         dataSent = false;
@@ -74,10 +74,12 @@ public class Connection implements Runnable {
                 }
                 ByteBuffer bufferNetwork = networkToDeviceQueue.poll();
                 if (bufferNetwork != null) {
-                    bufferNetwork.flip();
-//                    Packet2 packet = new Packet2(bufferNetwork);
-//                    Log.d(TAG, "to Local: " + packet.tcpHeader.toString());
+                    Packet packet = new Packet(bufferNetwork);
+                    bufferNetwork.limit(packet.ipHeader.getTotalLength());
                     bufferNetwork.position(0);
+//                    bufferNetwork.flip();
+//                    Log.e(TAG, "to Local: " + packet.tcpHeader.toString());
+//                    bufferNetwork.limit(40);
                     out.write(bufferNetwork);
                     dataReceived = true;
                     bufferNetwork.clear();
